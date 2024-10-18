@@ -4,7 +4,7 @@ import os
 import platform
 import random
 import string
-import tkMessageBox
+from tkinter import messagebox
 from tkinter import *
 from tkinter.ttk import Progressbar
 from selenium import webdriver
@@ -96,7 +96,7 @@ class GUI:
 
         # Show welcome message if first load
         if self.userInfo["firstLoad"]:
-            tkMessageBox.showinfo("Welcome", "Update your [USER INFO] with your own name and email. Multiple room bookings are not supported.")
+            messagebox.showinfo("Welcome", "Update your [USER INFO] with your own name and email. Multiple room bookings are not supported.")
 
     def create_user_entry_fields(self):
         labels = ['First:', 'Last:', 'Email:']
@@ -109,16 +109,109 @@ class GUI:
             setattr(self, f"{field}Entry", entry)
 
     def setup_date_selection(self):
-        # Date selection logic, similar to original code but more generic
-        pass
+        # Create a variable for the selected date
+        self.chosenDate = StringVar(self.master)
+        self.chosenDate.set("Select a Date")
+
+        # Placeholder for available dates - replace with logic to fetch dates as needed
+        self.availDates = ["Loading..."]  # Initial state before dates are loaded
+
+        # Create a dropdown menu for date selection
+        self.dateOptionMenu = OptionMenu(self.master, self.chosenDate, *self.availDates, command=self.date_click)
+        self.dateOptionMenu.grid(row=0, column=0, columnspan=1, sticky=(N, S, E, W), pady=(8, 0), padx=(5, 0))
+
+        # Assume dates are fetched from some source (e.g., a website)
+        self.fetch_dates()
+
+    def fetch_dates(self):
+        # Example function to fetch dates, replace with real logic
+        # This could involve scraping or using an API.
+        self.availDates = ["2024-10-18", "2024-10-19", "2024-10-20", "2024-10-21"]  # Replace with dynamic fetching logic
+        self.update_date_menu()
+
+    def date_click(self, selected_date):
+        """
+        Handles the event when a date is selected from the dropdown menu.
+        """
+        # Update the selected date
+        self.chosenDate.set(selected_date)
+        
+        # Optionally, print the selected date or perform other actions
+        print(f"Selected date: {selected_date}")
+
+        # Load available rooms and times for the selected date if needed
+        self.load_available_times()
+
+
+    def update_date_menu(self):
+        # Update the date OptionMenu with the newly fetched dates
+        menu = self.dateOptionMenu["menu"]
+        menu.delete(0, "end")  # Clear the menu
+        for date in self.availDates:
+            menu.add_command(label=date, command=lambda d=date: self.date_click(d))
+        # Set the default value to the first available date
+        if self.availDates:
+            self.chosenDate.set(self.availDates[0])
+
 
     def setup_room_selection(self):
-        # Room selection logic, similar to original code but more generic
-        pass
+        # Create a variable for the selected room
+        self.chosenRoom = StringVar(self.master)
+        self.chosenRoom.set("Select a Room")
+
+        # Placeholder for available rooms - replace with dynamic fetching as needed
+        self.availRooms = ROOMS  # ROOMS could be a predefined list or dynamically fetched
+
+        # Create a dropdown menu for room selection
+        self.roomOptionMenu = OptionMenu(self.master, self.chosenRoom, *self.availRooms, command=self.room_click)
+        self.roomOptionMenu.grid(row=1, column=0, columnspan=1, sticky=(N, S, E, W), padx=(5, 0), pady=(5, 0))
+
+        # Set the default room selection if rooms are available
+        if self.availRooms:
+            self.chosenRoom.set(self.availRooms[0])
+
+    def room_click(self, selected_room):
+        """
+        Handles the event when a room is selected from the dropdown menu.
+        """
+        # Update the selected room
+        self.chosenRoom.set(selected_room)
+        
+        # Optionally, print the selected room or perform other actions
+        print(f"Selected room: {selected_room}")
+
+        # Load available times for the selected room and date if needed
+        self.load_available_times()
+
 
     def setup_time_selection(self):
-        # Time selection logic, similar to original code but more generic
-        pass
+        # Create the Listbox for time slots
+        self.timeOptionList = Listbox(self.master, selectmode=EXTENDED, height=20, exportselection=0, takefocus=0)
+        self.timeOptionList.grid(row=2, column=0, rowspan=200, columnspan=1, sticky=(N, S, E, W), padx=(5, 0), pady=5)
+        self.timeOptionList.insert(0, "Loading available times...")
+        self.timeOptionList.config(state=DISABLED)
+
+        # Load available times based on selected room and date
+        self.load_available_times()
+
+    def load_available_times(self):
+        # Example function to fetch available times, replace with real logic
+        # This could involve scraping or using an API.
+        self.timeOptionList.config(state=NORMAL)
+        self.timeOptionList.delete(0, END)  # Clear previous entries
+
+        # Placeholder for available times - replace with logic to fetch times
+        self.availTimes = TIME_SLOTS  # TIME_SLOTS could be a predefined list or dynamically fetched
+        for time_slot in self.availTimes:
+            self.timeOptionList.insert(END, time_slot)
+
+        # Disable the Listbox if no times are available
+        if not self.availTimes:
+            self.timeOptionList.insert(END, "No times available")
+            self.timeOptionList.config(state=DISABLED)
+        else:
+            self.timeOptionList.config(state=NORMAL)
+
 
     def window_close(self):
         self.save_user_info()
